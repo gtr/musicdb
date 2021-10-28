@@ -1,0 +1,28 @@
+<html>
+
+<head> <title>Home</title> </head>
+
+<body>
+    <h1>Options</h1>
+
+    <ul>
+        <li> <a href="/add">Add New Album</a> </li>
+    </ul>
+
+    <h1>Album Library</h1>
+
+    {{ range $album := .AlbumDB }}
+
+    <h2>{{$album.Artist}} - <i>{{$album.Title}} ({{$album.Year}})</i></h2>
+
+    <form action="album/{{$album.Id}}" method="GET">
+        <input type="submit" value="Edit Album Info">
+    </form>
+
+    <img src="{{$album.URL}}" style="height: 500px; width: 500px;">
+
+    {{end}}
+
+</body>
+
+</html>

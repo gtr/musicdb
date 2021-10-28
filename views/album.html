@@ -1,0 +1,48 @@
+<html>
+
+<head> <title>ALBUM INFO</title> </head>
+
+<body>
+    <h1>Edit Album Info</h1>
+
+    <h1>Options</h1>
+    
+    <form action="/delete/{{.Id}}" method="POST" id="deleteForm">
+    </form>
+
+    <ul>
+        <li> <a href="/">Back to Library</a> </li>
+        <li> <u><div id="delete_it">Delete</div></u> </li>
+    </ul>
+
+    <h2 style="margin-top: 70px; ">{{.Artist}} - <i>{{.Title}} ({{.Year}})</i></h2>
+    <img src="{{.Url}}" style="height: 600px; width: 600px;">
+
+    <h1>Edit Album Metadata</h1>
+
+    <form action="/edit/{{.Id}}" method="POST">
+        <label for="title">Title:</label><br>
+        <input style="margin-bottom: 5px;" type="text" id="title" name="title"><br>
+
+        <label for="artist">Artist:</label><br>
+        <input style="margin-bottom: 5px;" type="text" id="artist" name="artist"><br>
+
+        <label for="url">Cover Art URL:</label><br>
+        <input style="margin-bottom: 5px;" type="text" id="url" name="url"><br>
+
+        <label for="year">Year: </label><br>
+        <input style="margin-bottom: 5px;" type="text" id="year" name="year"><br>
+
+        <input style="margin-bottom: 5px;" type="submit" value="Submit">
+
+    </form>
+
+</body>
+
+<script>
+    document.getElementById("delete_it").onclick = function () {
+        document.getElementById("deleteForm").submit();
+    };
+</script>
+
+</html>

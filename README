@@ -1,0 +1,23 @@
+PROJECT PART 1
+Gerardo Torres (gtc250)
+=================================
+
+
+Compile:
+$ go build
+
+Run:
+$ ./DistSys
+
+
+Testing:
+1. Create: There is an "Add New Album" link in the homepage "/" which takes the
+   user to a form in which to add a new album.
+2. Read: The homepage displays all the albums.
+3. Update: Below each album "Aritst - Title (Year)" header, there is an "Edit 
+   Album Info" button which takes the user to a "Edit Album Info" page for a 
+   particular album. At the bottom of this page we can change the values of the
+   metadata of the album. Whichever fields are left empty will not be modified
+4. Delete: In the same "Edit Album Info" page, the user has the option to 
+   delete the album (under "Back to Library")
+

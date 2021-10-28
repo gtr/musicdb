@@ -1,0 +1,36 @@
+<html>
+
+<head> <title>Add album</title> </head>
+
+
+<body>
+    <h1>Options</h1>
+    
+    <ul>
+        <li> <a href="/">Back to Library</a> </li>
+    </ul>
+    
+    <h1>Add New Album</h1>
+
+    <form action="/add" method="POST">
+        <label for="title">Title:</label><br>
+        <input style="margin-bottom: 5px;" type="text" id="title" name="title"><br>
+
+        <label for="artist">Artist:</label><br>
+        <input style="margin-bottom: 5px;" type="text" id="artist" name="artist"><br>
+
+        <label for="url">Covert Art URL:</label><br>
+        <input style="margin-bottom: 5px;" type="text" id="url" name="url"><br>
+
+        <label for="year">Year: </label><br>
+        <input style="margin-bottom: 5px;" type="text" id="year" name="year"><br>
+
+        <div style="margin-top: 25px;">
+            <input type="submit" value="Submit">
+        </div>
+
+    </form>
+
+</body>
+
+</html>
