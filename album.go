@@ -2,17 +2,10 @@ package main
 
 import (
 	"errors"
+	"fmt"
+	"log"
 	"strconv"
 )
-
-// A global variable keeping track of the current ID (primary key) of the
-// database. This has to be changed later on since this is a single point of
-// failure and we need a better way to create unique primary keys.
-var currID = 0
-
-// A global variable which is the in-memory database implemented as a map from
-// integers to an album pointer.
-var AlbumDB map[int]*Album
 
 // Album is a struct representing an album.
 type Album struct {
@@ -33,22 +26,35 @@ var hardcodedAlbums = [][]string{
 	{"Purple Haze", "Cam'ron", "https://lastfm.freetls.fastly.net/i/u/770x0/3025393c10b6cc84bf85cba203bdb7f6.jpg", "2004"},
 }
 
+// AlbumDB represents our in-memory database implemented as a map from integers
+// to an album pointer.
+type AlbumDB struct {
+	Data   map[int]*Album
+	CurrID int
+}
+
 /*
  * InitializeHardcodedAlbums initializes the AlbumDB with hardcoded albums.
  */
-func InitializeHardcodedAlbums() {
-	AlbumDB = make(map[int]*Album)
-	for _, album := range hardcodedAlbums {
-		AddAlbum(album[0], album[1], album[2], album[3])
+func NewAlbumDB() *AlbumDB {
+	db := &AlbumDB{
+		Data:   make(map[int]*Album),
+		CurrID: 0,
 	}
+
+	for _, album := range hardcodedAlbums {
+		db.AddAlbum(album[0], album[1], album[2], album[3])
+	}
+
+	return db
 }
 
 /*
  * AddAlbum adds a new album struct to our in-memory database.
  */
-func AddAlbum(title, artist, url, year string) {
-	AlbumDB[currID] = &Album{
-		Id:     strconv.Itoa(currID),
+func (db *AlbumDB) AddAlbum(title, artist, url, year string) {
+	db.Data[db.CurrID] = &Album{
+		Id:     strconv.Itoa(db.CurrID),
 		Title:  title,
 		Artist: artist,
 		URL:    url,
@@ -56,7 +62,7 @@ func AddAlbum(title, artist, url, year string) {
 	}
 
 	// Increment the ID by 1 for the next AddAlbum call.
-	currID += 1
+	db.CurrID += 1
 }
 
 /*
@@ -65,16 +71,19 @@ func AddAlbum(title, artist, url, year string) {
  * Returns an error if the ID is not valid or if there isn't an album
  * associated with the given ID.
  */
-func RemoveAlbum(id string) error {
+func (db *AlbumDB) RemoveAlbum(id string) error {
 	idInt, err := strconv.Atoi(id)
+
 	if err != nil {
 		return err
 	}
-	if _, ok := AlbumDB[idInt]; ok {
-		delete(AlbumDB, idInt)
+
+	if _, ok := db.Data[idInt]; ok {
+		delete(db.Data, idInt)
 	} else {
 		return errors.New("Album does not exist")
 	}
+
 	return nil
 }
 
@@ -86,14 +95,16 @@ func RemoveAlbum(id string) error {
  * Returns an error if the ID is not valid or if there isn't an album
  * associated with the given ID.
  */
-func EditAlbum(id, title, artist, url, year string) error {
+func (db *AlbumDB) EditAlbum(id, title, artist, url, year string) error {
+	log.Println("[album.go] EditAlbum")
 	idInt, err := strconv.Atoi(id)
 	if err != nil {
 		return err
 	}
-	if _, ok := AlbumDB[idInt]; ok {
+
+	if _, ok := db.Data[idInt]; ok {
 		// Retrieve the album using the ID.
-		a := AlbumDB[idInt]
+		a := db.Data[idInt]
 
 		// For each field, if the given value is mon-empty, update the fields
 		// using the new value; otherwise, leave the fields as is.
@@ -112,6 +123,9 @@ func EditAlbum(id, title, artist, url, year string) error {
 	} else {
 		return errors.New("Album does not exist")
 	}
+
+	log.Println("[album.go] EditAlbum DONE")
+
 	return nil
 }
 
@@ -121,15 +135,44 @@ func EditAlbum(id, title, artist, url, year string) error {
  * Also returns an error if the ID is not valid or if there isn't an album
  * associated with the given ID.
  */
-func GetAlbum(id string) (*Album, error) {
+func (db *AlbumDB) GetAlbum(id string) (*Album, error) {
 	idInt, err := strconv.Atoi(id)
 	if err != nil {
 		return nil, err
 	}
-	if _, ok := AlbumDB[idInt]; ok {
-		a := AlbumDB[idInt]
+
+	if _, ok := db.Data[idInt]; ok {
+		a := db.Data[idInt]
 		return a, nil
 	} else {
 		return nil, errors.New("Album does not exist")
+	}
+}
+
+/*
+ * GetAllAlbums retrieves all albums in the in-memory database.
+ */
+func (db *AlbumDB) GetAllAlbums() []*Album {
+	lst := make([]*Album, 0)
+
+	for i := 0; i < len(db.Data); i++ {
+		if db.Data[i] != nil {
+			lst = append(lst, db.Data[i])
+		}
+	}
+
+	db.PrintAlbumDB()
+
+	return lst
+}
+
+func (db *AlbumDB) PrintAlbumDB() {
+	for k := 0; k < len(db.Data); k++ {
+		v := db.Data[k]
+		if v != nil {
+			fmt.Printf("%d: %s %s (%s)\n", k, v.Artist, v.Title, v.Year)
+		} else {
+			fmt.Printf("%d: ----------------------------------\n", k)
+		}
 	}
 }

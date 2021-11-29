@@ -1,14 +1,16 @@
-PROJECT PART 1
+PROJECT PART 2
 Gerardo Torres (gtc250)
 =================================
 
-
 Compile:
-$ go build
+$ make frontend
+$ make backend
 
 Run:
-$ ./DistSys
+$ ./backend
+$ ./frontend
 
+The backend binary must be run before the frontend binary.
 
 Testing:
 1. Create: There is an "Add New Album" link in the homepage "/" which takes the
@@ -21,3 +23,17 @@ Testing:
 4. Delete: In the same "Edit Album Info" page, the user has the option to 
    delete the album (under "Back to Library")
 
+Status:
+I finished the assignment! The frontend and backend have been seperated with 
+the frontend handling HTTP requests (via Iris) and the backend handling the 
+data store.
+
+Design Decisions:
+Most of the design decisions revolved around how to divide the functionality, 
+i.e. which methods should go in the frontend or the backend. However, I think 
+that the code for my first phase was very neatly organized so all I had to do 
+was copy-and-paste with small edits. Another design decision was how to make 
+the frontend and the backend communicate with one another. I decided to go with
+a TCP approach with a DataMessage struct that would be encoded and decoded. This 
+message struct would hold the neccesary information for the backend to know 
+what operations should occur and what data to use for those operations.
