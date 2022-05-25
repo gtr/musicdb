@@ -1,3 +1,7 @@
+MusicDB
+Gerardo Torres Castro
+=================================
+
 Compile:
     $ make frontend
     $ make backend
@@ -5,5 +9,8 @@ Compile:
 Run:
     $ ./backend
     $ ./frontend
+
+View:
+    http://localhost:8080
 
 The backend binary must be run before the frontend binary.

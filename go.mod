@@ -1,4 +1,4 @@
-module DistSys
+module musicdb
 
 go 1.17
 
