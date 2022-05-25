@@ -17,10 +17,7 @@ type BackendServer struct {
 	Port string   // The port number of the backend server
 	DB   *AlbumDB // A pointer to the in-memory album database
 
-	// Node fields
-	IsLeader  bool     // Whether or not the node is the leader
-	Leader    string   // The address of the current (known) leader
-	Endpoints []string // The list of other node endpoints
+	consensus *ConsensusModule // The Consesus module
 }
 
 /*
@@ -28,10 +25,9 @@ type BackendServer struct {
  */
 func NewBackendServer(host, port string, endpoints []string) *BackendServer {
 	return &BackendServer{
-		Host:      host,
-		Port:      port,
-		Endpoints: endpoints,
-		DB:        NewAlbumDB(),
+		Host: host,
+		Port: port,
+		DB:   NewAlbumDB(),
 	}
 }
 
@@ -66,7 +62,7 @@ func (srv *BackendServer) HandleClientConn(conn net.Conn) {
 	log.Println("[BackendServer] Handling " + conn.RemoteAddr().String())
 
 	for {
-		msg := srv.ReadMessage(conn)
+		msg := srv.ReadClientMessage(conn)
 		srv.HandleClientRequest(conn, msg)
 	}
 }
@@ -74,9 +70,9 @@ func (srv *BackendServer) HandleClientConn(conn net.Conn) {
 // ============================ READ/WRITE MESSAGES ===========================
 
 /*
- * ReadMessage reads a client message from a TCP connection.
+ * ReadClientMessage reads a client message from a TCP connection.
  */
-func (srv *BackendServer) ReadMessage(conn net.Conn) *DataMessage {
+func (srv *BackendServer) ReadClientMessage(conn net.Conn) *DataMessage {
 	log.Print("[BackendServer] Reading message")
 
 	for {
@@ -92,15 +88,22 @@ func (srv *BackendServer) ReadMessage(conn net.Conn) *DataMessage {
 }
 
 /*
- * WriteMessage writes a message to a client over a TCP connection.
+ * WriteClientMessage writes a message to a client over a TCP connection.
  */
-func (srv *BackendServer) WriteMessage(conn net.Conn, msg *DataMessage) {
+func (srv *BackendServer) WriteClientMessage(conn net.Conn, msg *DataMessage) {
 	log.Println("[BackendServer] Sending message", msg)
 
 	encoder := gob.NewEncoder(conn)
 	if err := encoder.Encode(msg); err != nil {
 		panic(err)
 	}
+}
+
+// ======================= COMMUNICATION TO OTHER NODES =======================
+
+// Returns the address of the current node which is just the hostname and port.
+func (node *BackendServer) GetAddress() string {
+	return node.Host + node.Port
 }
 
 // ============================== CLIENT REQUESTS =============================
@@ -137,7 +140,7 @@ func (srv *BackendServer) handleGetAllAlbums(conn net.Conn) {
 		Status:     true,
 	}
 
-	srv.WriteMessage(conn, response)
+	srv.WriteClientMessage(conn, response)
 }
 
 /*
@@ -146,7 +149,7 @@ func (srv *BackendServer) handleGetAllAlbums(conn net.Conn) {
 func (srv *BackendServer) handleGetAlbum(conn net.Conn, request *DataMessage) {
 	album, err := srv.DB.GetAlbum(request.Index)
 	if err != nil {
-		srv.WriteMessage(conn, &DataMessage{
+		srv.WriteClientMessage(conn, &DataMessage{
 			Status: false,
 		})
 	}
@@ -157,7 +160,7 @@ func (srv *BackendServer) handleGetAlbum(conn net.Conn, request *DataMessage) {
 		Status:     true,
 	}
 
-	srv.WriteMessage(conn, response)
+	srv.WriteClientMessage(conn, response)
 }
 
 /*
@@ -171,7 +174,7 @@ func (srv *BackendServer) handleAddAlbum(conn net.Conn, request *DataMessage) {
 		Status: true,
 	}
 
-	srv.WriteMessage(conn, response)
+	srv.WriteClientMessage(conn, response)
 }
 
 /*
@@ -189,7 +192,7 @@ func (srv *BackendServer) handleEditAlbum(conn net.Conn, request *DataMessage) {
 		Status: err == nil,
 	}
 
-	srv.WriteMessage(conn, response)
+	srv.WriteClientMessage(conn, response)
 }
 
 /*
@@ -203,13 +206,7 @@ func (srv *BackendServer) handleDeleteAlbum(conn net.Conn, request *DataMessage)
 		Status: err == nil,
 	}
 
-	srv.WriteMessage(conn, response)
-}
-
-// ========================= MAIN & PARSING FUNCTIONS =========================
-
-func (srv *BackendServer) AskForLeader() {
-
+	srv.WriteClientMessage(conn, response)
 }
 
 // ========================= MAIN & PARSING FUNCTIONS =========================

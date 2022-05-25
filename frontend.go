@@ -17,8 +17,8 @@ import (
 // FrontendServer represents the frontend server
 type FrontendServer struct {
 	HTTPPort  string       // Port to listen to HTTP requests
-	Endpoints []string     // Endpoint to the backend server
-	Conn      *net.TCPConn // TCP connection to backend server
+	Endpoints []string     // Endpoints to the backend servers
+	Conn      *net.TCPConn // TCP connection to backend server (leader)
 }
 
 /*
@@ -41,7 +41,7 @@ func (srv *FrontendServer) Start() {
 	app := iris.Default()
 
 	// Connect to the backend server via TCP
-	srv.ConnectToBackend(srv.Endpoints[0])
+	srv.ConnectToBackend(srv.PickRandom())
 
 	// Register a folder for HTML templates.
 	app.RegisterView(iris.HTML("./views", ".html"))
@@ -353,12 +353,6 @@ func ParseFrontendCommandLineArgs() (string, []string) {
 
 func main() {
 	httpPort, endpoints := ParseFrontendCommandLineArgs()
-
-	// fmt.Println("HTTP Port:", httpPort)
-	// fmt.Println("Backend Endpoints:")
-	// for _, endpoint := range endpoints {
-	// 	fmt.Println(endpoint)
-	// }
 
 	srv := NewFrontendServer(httpPort, endpoints)
 	srv.Start()
